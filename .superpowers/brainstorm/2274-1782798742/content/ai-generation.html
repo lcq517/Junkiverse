@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI生成方案选择</title>
+<style>
+  :root {
+    --bg-primary: #f5f5f7;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #e5e5e7;
+    --border: #d1d1d6;
+    --text-primary: #1d1d1f;
+    --text-secondary: #86868b;
+    --accent: #0071e3;
+    --accent-hover: #0077ed;
+    --success: #34c759;
+    --warning: #ff9f0a;
+    --error: #ff3b30;
+    --selected-bg: #e8f4fd;
+    --selected-border: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-primary: #1d1d1f;
+      --bg-secondary: #2d2d2f;
+      --bg-tertiary: #3d3d3f;
+      --border: #424245;
+      --text-primary: #f5f5f7;
+      --text-secondary: #86868b;
+      --accent: #0a84ff;
+      --accent-hover: #409cff;
+      --selected-bg: rgba(10, 132, 255, 0.15);
+      --selected-border: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding: 2rem;
+    line-height: 1.5;
+  }
+  h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .subtitle { color: var(--text-secondary); margin-bottom: 1.5rem; max-width: 640px; }
+  .options { display: flex; flex-direction: column; gap: 0.75rem; max-width: 640px; }
+  .option {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .option:hover { border-color: var(--accent); }
+  .option.selected { background: var(--selected-bg); border-color: var(--selected-border); }
+  .option .letter {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    width: 1.75rem; height: 1.75rem;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 0.85rem; flex-shrink: 0;
+  }
+  .option.selected .letter { background: var(--accent); color: white; }
+  .option .content { flex: 1; }
+  .option .content h3 { font-size: 0.95rem; margin-bottom: 0.25rem; }
+  .option .content p { color: var(--text-secondary); font-size: 0.85rem; margin: 0; }
+  .option .content .tags { margin-top: 0.5rem; }
+  .option .content .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-right: 4px;
+    margin-bottom: 2px;
+  }
+  .tag.green { background: #d1fae5; color: #065f46; }
+  .tag.amber { background: #fef3c7; color: #92400e; }
+  .tag.red { background: #fee2e2; color: #991b1b; }
+  .tag.gray { background: var(--bg-tertiary); color: var(--text-secondary); }
+  .pros-cons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    max-width: 640px;
+  }
+  .pros, .cons {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+  }
+  .pros h4 { color: var(--success); margin-bottom: 0.4rem; font-size: 0.8rem; }
+  .cons h4 { color: var(--error); margin-bottom: 0.4rem; font-size: 0.8rem; }
+  .pros ul, .cons ul { margin-left: 1rem; color: var(--text-secondary); }
+  .pros li, .cons li { margin-bottom: 0.2rem; }
+  .tip {
+    margin-top: 1.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    max-width: 640px;
+  }
+  .tip strong { color: var(--text-primary); }
+</style>
+</head>
+<body>
+
+<h2>AI 生成用什么方案？</h2>
+<p class="subtitle">拼贴完成后，AI 基于拼贴原型生成精美角色立绘和幽默档案故事</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>第三方 AI API（推荐）</h3>
+      <p>调用大模型 API 实现：图片生成用 DALL-E / 文心一格 / 可灵，故事生成用 GPT / 豆包 / 文心一言。效果好，接入快，但有调用成本。</p>
+      <div class="tags">
+        <span class="tag green">效果好</span>
+        <span class="tag amber">有成本</span>
+        <span class="tag green">接入快</span>
+        <span class="tag gray">需后端</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>纯前端轻量方案</h3>
+      <p>图片生成用 SVG/CSS 艺术化处理（把拼贴变成插画风格），故事用浏览器端小模型或模板化生成。零成本，但效果有限。</p>
+      <div class="tags">
+        <span class="tag green">零成本</span>
+        <span class="tag red">效果一般</span>
+        <span class="tag green">纯前端</span>
+        <span class="tag amber">创意受限</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>混合方案</h3>
+      <p>MVP 阶段先用模板化故事 + 拼贴图艺术滤镜，快速验证玩法；等有用户后再接入真实 AI 生成。</p>
+      <div class="tags">
+        <span class="tag green">MVP 最快</span>
+        <span class="tag amber">体验打折</span>
+        <span class="tag green">零成本</span>
+        <span class="tag green">可迭代</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tip">
+  <strong>💡 建议：</strong>MVP 先用混合方案——故事用模板化生成（随机组合性格/职业/口头禅等），图片给拼贴加艺术滤镜。先验证用户是否觉得好玩，再投入真实 AI 成本。
+</div>
+
+<script>
+function toggleSelect(el) {
+  document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+</script>
+
+</body>
+</html>
