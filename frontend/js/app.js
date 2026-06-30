@@ -17,6 +17,70 @@ const App = {
         window.Toast = Toast;
     },
 
+    startDemo() {
+        console.log('启动快速体验模式...');
+        CanvasEditor.clear();
+
+        const demoParts = [
+            { name: '瓶盖', color: '#E91E63', size: 60, x: 0.35, y: 0.3 },
+            { name: '纽扣', color: '#2196F3', size: 45, x: 0.65, y: 0.25 },
+            { name: '发绳', color: '#FF9800', size: 55, x: 0.5, y: 0.6 },
+            { name: '纸盒', color: '#8BC34A', size: 70, x: 0.5, y: 0.85 }
+        ];
+
+        let addedCount = 0;
+        demoParts.forEach((part, index) => {
+            setTimeout(() => {
+                const imageData = this.createDemoPartImage(part.color, part.size, part.name);
+                CanvasEditor.addPart(imageData, part.name);
+
+                const lastPart = CanvasEditor.parts[CanvasEditor.parts.length - 1];
+                if (lastPart) {
+                    const canvas = document.getElementById('editor-canvas');
+                    lastPart.x = canvas.width * part.x;
+                    lastPart.y = canvas.height * part.y;
+                    lastPart.rotation = (Math.random() - 0.5) * 30;
+                    lastPart.scale = 0.8 + Math.random() * 0.4;
+                    lastPart.zIndex = index;
+                }
+
+                addedCount++;
+                if (addedCount === demoParts.length) {
+                    CanvasEditor.render();
+                    CanvasEditor.selectPart(null);
+                }
+            }, index * 100);
+        });
+
+        setTimeout(() => {
+            this.navigate('editor');
+            Toast.show('已加载 4 个示例部件，试试拖拽拼贴吧！');
+        }, demoParts.length * 100 + 100);
+    },
+
+    createDemoPartImage(color, size, name) {
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+
+        ctx.beginPath();
+        ctx.arc(size / 2, size / 2, size / 2 - 2, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = 'white';
+        ctx.font = `${size * 0.2}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(name, size / 2, size / 2);
+
+        return canvas.toDataURL('image/png');
+    },
+
     /**
      * 页面导航
      */

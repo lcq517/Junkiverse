@@ -134,6 +134,29 @@ body {
     margin-bottom: 28px;
 }
 
+.btn-demo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px 20px;
+    background: rgba(255,255,255,.12);
+    color: white;
+    border: 1px solid rgba(255,255,255,.3);
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    backdrop-filter: blur(8px);
+}
+
+.btn-demo:active {
+    background: rgba(255,255,255,.2);
+    transform: scale(0.98);
+}
+
 .hero-illustration {
     position: absolute;
     right: -20px;
