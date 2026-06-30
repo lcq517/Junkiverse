@@ -4,7 +4,7 @@
 
 const API = {
     // 后端 API 地址（MVP阶段使用本地）
-    baseUrl: 'http://localhost:8080/api',
+    baseUrl: '/api',
 
     /**
      * 发送生成角色请求

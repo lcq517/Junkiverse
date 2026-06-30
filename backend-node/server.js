@@ -4,7 +4,11 @@
  */
 
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
 const { URL } = require('url');
+
+const FRONTEND_DIR = path.join(__dirname, '..', 'frontend');
 
 // 作品存储（内存版）
 const works = new Map();
@@ -173,6 +177,61 @@ function formatDate(isoString) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
+// MIME 类型映射
+const mimeTypes = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf'
+};
+
+// 静态文件服务
+function serveStatic(req, res, urlPath) {
+  let filePath = urlPath === '/' ? '/index.html' : urlPath;
+  filePath = path.join(FRONTEND_DIR, filePath);
+
+  // 防止路径遍历
+  const normalizedPath = path.normalize(filePath);
+  const resolvedFrontendDir = path.resolve(FRONTEND_DIR);
+  const resolvedPath = path.resolve(normalizedPath);
+
+  console.log('静态文件请求:', urlPath, '->', resolvedPath);
+
+  if (!resolvedPath.startsWith(resolvedFrontendDir)) {
+    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Forbidden');
+    return;
+  }
+
+  fs.readFile(resolvedPath, (err, data) => {
+    if (err) {
+      console.error('静态文件读取失败:', resolvedPath, err.code);
+      if (err.code === 'ENOENT') {
+        res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+        res.end('Not Found');
+      } else {
+        res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+        res.end('Server Error');
+      }
+      return;
+    }
+
+    const ext = path.extname(resolvedPath).toLowerCase();
+    const contentType = mimeTypes[ext] || 'application/octet-stream';
+    res.writeHead(200, { 'Content-Type': contentType });
+    res.end(data);
+  });
+}
+
 // 转换为响应对象
 function toResponse(work) {
   return {
@@ -189,7 +248,7 @@ function toResponse(work) {
 // 创建服务器
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
-  const path = url.pathname;
+  const urlPath = url.pathname;
 
   // 预检请求
   if (req.method === 'OPTIONS') {
@@ -201,7 +260,7 @@ const server = http.createServer(async (req, res) => {
 
   try {
     // 健康检查
-    if (path === '/api/health' && req.method === 'GET') {
+    if (urlPath === '/api/health' && req.method === 'GET') {
       sendJSON(res, 200, {
         status: 'UP',
         service: 'junkiverse-backend'
@@ -210,7 +269,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     // 创建生成任务
-    if (path === '/api/generate/character' && req.method === 'POST') {
+    if (urlPath === '/api/generate/character' && req.method === 'POST') {
       const body = await parseBody(req);
       const work = createWork(body.collageImage, body.parts || []);
       console.log(`创建生成任务 #${work.id}，部件数量：${body.parts?.length || 0}`);
@@ -219,7 +278,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     // 查询生成结果
-    const generateMatch = path.match(/^\/api\/generate\/(\d+)$/);
+    const generateMatch = urlPath.match(/^\/api\/generate\/(\d+)$/);
     if (generateMatch && req.method === 'GET') {
       const id = parseInt(generateMatch[1]);
       const work = getWork(id);
@@ -232,14 +291,20 @@ const server = http.createServer(async (req, res) => {
     }
 
     // 获取最近作品
-    if (path === '/api/works' && req.method === 'GET') {
+    if (urlPath === '/api/works' && req.method === 'GET') {
       const recent = getRecentWorks(10);
       sendJSON(res, 200, recent.map(toResponse));
       return;
     }
 
+    // 非 /api 开头的请求，当作静态文件处理
+    if (!urlPath.startsWith('/api/') && req.method === 'GET') {
+      serveStatic(req, res, urlPath);
+      return;
+    }
+
     // 404
-    sendJSON(res, 404, { error: 'Not Found', path });
+    sendJSON(res, 404, { error: 'Not Found', path: urlPath });
 
   } catch (err) {
     console.error('请求处理错误：', err);
