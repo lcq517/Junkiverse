@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0F5132">
+<title>废物星人改造计划</title>
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<div id="app">
+    <!-- 首页 -->
+    <div id="page-home" class="page active">
+        <div class="hero">
+            <div class="hero-bg"></div>
+            <div class="hero-content">
+                <div class="badge">
+                    <span class="dot"></span>
+                    废物星人改造计划
+                </div>
+                <h1>让每个<span class="highlight">废品</span>都拥有<br>第二次生命</h1>
+                <p class="subtitle">拍照抠图 → 2D 拼贴 → AI 生成角色立绘与故事</p>
+                <button class="btn-primary" onclick="App.navigate('camera')">
+                    <span>开始创作</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="hero-illustration">
+                <div class="character-preview">
+                    <div class="part part-1">瓶盖</div>
+                    <div class="part part-2">纽扣</div>
+                    <div class="part part-3">发绳</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="steps-section">
+            <h2>三步魔法闭环</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div class="step-icon">📸</div>
+                    <h3>拍照抠图</h3>
+                    <p>随手拍下废品，AI 自动抠图</p>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div class="step-icon">✂️</div>
+                    <h3>2D 拼贴</h3>
+                    <p>自由组合，像玩贴纸一样</p>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div class="step-icon">🎨</div>
+                    <h3>AI 生成</h3>
+                    <p>变身精美角色立绘与故事</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 拍照页 -->
+    <div id="page-camera" class="page">
+        <div class="page-header">
+            <button class="btn-back" onclick="App.navigate('home')">←</button>
+            <h2>拍照 / 上传</h2>
+        </div>
+
+        <div class="camera-container">
+            <div id="camera-preview" class="camera-viewfinder">
+                <video id="video" autoplay playsinline></video>
+                <canvas id="canvas" style="display:none;"></canvas>
+            </div>
+
+            <div class="camera-actions">
+                <button class="btn-secondary" onclick="App.selectFromGallery()">
+                    📷 相册
+                </button>
+                <button class="btn-capture" id="btn-capture" onclick="App.capturePhoto()">
+                    <div class="capture-ring"></div>
+                </button>
+                <button class="btn-secondary" onclick="App.flipCamera()">
+                    🔄 翻转
+                </button>
+            </div>
+
+            <input type="file" id="file-input" accept="image/*" style="display:none;" onchange="App.handleFileSelect(event)">
+        </div>
+    </div>
+
+    <!-- 抠图预览页 -->
+    <div id="page-removebg" class="page">
+        <div class="page-header">
+            <button class="btn-back" onclick="App.navigate('camera')">←</button>
+            <h2>抠图预览</h2>
+        </div>
+
+        <div class="preview-container">
+            <div id="removed-bg-preview" class="image-preview">
+                <div class="loading-spinner" id="removing-spinner">
+                    <div class="spinner"></div>
+                    <p>正在 AI 抠图...</p>
+                </div>
+                <img id="removed-image" style="display:none;">
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn-secondary" onclick="App.navigate('camera')">重新拍摄</button>
+            <button class="btn-primary" id="btn-confirm-remove" onclick="App.confirmRemove()" disabled>确认抠图</button>
+        </div>
+    </div>
+
+    <!-- 拼贴编辑器页 -->
+    <div id="page-editor" class="page">
+        <div class="page-header">
+            <button class="btn-back" onclick="App.navigate('camera')">←</button>
+            <h2>拼贴编辑器</h2>
+            <button class="btn-text" onclick="App.addPart()">+ 添加部件</button>
+        </div>
+
+        <div class="editor-container">
+            <div class="canvas-wrapper">
+                <canvas id="editor-canvas"></canvas>
+            </div>
+
+            <div class="parts-tray">
+                <h4>我的部件</h4>
+                <div id="parts-list" class="parts-list">
+                    <!-- 动态生成的部件缩略图 -->
+                </div>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <button class="tool-btn" onclick="App.deleteSelected()" title="删除选中">🗑</button>
+            <button class="tool-btn" onclick="App.bringForward()" title="上移">⬆️</button>
+            <button class="tool-btn" onclick="App.sendBackward()" title="下移">⬇️</button>
+        </div>
+
+        <div class="action-buttons fixed-bottom">
+            <button class="btn-secondary" onclick="App.navigate('camera')">+ 添加更多</button>
+            <button class="btn-primary" id="btn-generate" onclick="App.generateCharacter()">生成角色 ✨</button>
+        </div>
+    </div>
+
+    <!-- 生成中页 -->
+    <div id="page-generating" class="page">
+        <div class="generating-container">
+            <div class="magic-icon">✨</div>
+            <h2>废品星人正在觉醒...</h2>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <p class="generating-tips" id="generating-tip">正在召唤创意能量</p>
+        </div>
+    </div>
+
+    <!-- 结果页 -->
+    <div id="page-result" class="page">
+        <div class="page-header">
+            <button class="btn-back" onclick="App.navigate('home')">←</button>
+            <h2>角色档案</h2>
+        </div>
+
+        <div class="result-container">
+            <div class="character-card">
+                <img id="result-image" src="" alt="角色立绘">
+            </div>
+
+            <div class="character-info">
+                <h3 id="result-name">角色名称</h3>
+                <div class="character-story" id="result-story">
+                    角色故事...
+                </div>
+            </div>
+
+            <div class="share-actions">
+                <button class="btn-secondary" onclick="App.saveImage()">💾 保存图片</button>
+                <button class="btn-secondary" onclick="App.shareToClipboard()">📋 复制链接</button>
+            </div>
+
+            <div class="result-actions">
+                <button class="btn-primary" onclick="App.createAnother()">再来一个 🔄</button>
+                <button class="btn-secondary" onclick="App.navigate('home')">返回首页</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast 提示 -->
+<div id="toast" class="toast"></div>
+
+<!-- 加载动画 -->
+<div id="global-loader" class="global-loader" style="display:none;">
+    <div class="loader-content">
+        <div class="spinner large"></div>
+        <p id="loader-text">加载中...</p>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/index.min.js"></script>
+<script src="js/api.js"></script>
+<script src="js/camera.js"></script>
+<script src="js/background-remover.js"></script>
+<script src="js/canvas-editor.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
