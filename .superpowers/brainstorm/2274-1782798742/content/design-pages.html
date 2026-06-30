@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>页面流程设计</title>
+<style>
+  :root {
+    --bg-primary: #f5f5f7;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #e5e5e7;
+    --border: #d1d1d6;
+    --text-primary: #1d1d1f;
+    --text-secondary: #86868b;
+    --text-tertiary: #aeaeb2;
+    --accent: #0071e3;
+    --accent-hover: #0077ed;
+    --success: #34c759;
+    --green-deep: #0F5132;
+    --green: #2E7D32;
+    --mint: #E8F5E9;
+    --amber: #F59E0B;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-primary: #1d1d1f;
+      --bg-secondary: #2d2d2f;
+      --bg-tertiary: #3d3d3f;
+      --border: #424245;
+      --text-primary: #f5f5f7;
+      --text-secondary: #86868b;
+      --text-tertiary: #636366;
+      --accent: #0a84ff;
+      --accent-hover: #409cff;
+      --success: #30d158;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding: 2rem;
+    line-height: 1.6;
+  }
+  h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+  h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .subtitle { color: var(--text-secondary); margin-bottom: 1.5rem; max-width: 800px; }
+  .section { margin-bottom: 2rem; max-width: 800px; }
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+  }
+
+  .flow-steps {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    overflow-x: auto;
+  }
+  .flow-step {
+    flex-shrink: 0;
+    text-align: center;
+    min-width: 100px;
+    padding: 0.75rem 0.5rem;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    font-size: 0.8rem;
+  }
+  .flow-step .icon { font-size: 1.5rem; margin-bottom: 0.25rem; }
+  .flow-step .name { font-weight: 600; font-size: 0.75rem; }
+  .flow-arrow { color: var(--text-tertiary); flex-shrink: 0; font-size: 0.9rem; }
+
+  .pages {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .page-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    gap: 1rem;
+  }
+  .page-num {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+  .page-info { flex: 1; }
+  .page-info h4 {
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+  }
+  .page-info .page-desc {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+  }
+  .page-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .feat-tag {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+  }
+
+  .api-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .api-table th, .api-table td {
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .api-table th {
+    background: var(--bg-tertiary);
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+  .api-table tr:last-child td { border-bottom: none; }
+  .method {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+  .method.get { background: #dbeafe; color: #1e40af; }
+  .method.post { background: #d1fae5; color: #065f46; }
+
+  .data-model {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    font-family: "SF Mono", Monaco, Consolas, monospace;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .data-model .key { color: var(--accent); }
+  .data-model .type { color: var(--success); }
+  .data-model .comment { color: var(--text-tertiary); font-style: italic; }
+</style>
+</head>
+<body>
+
+<h2>页面流程与功能设计</h2>
+<p class="subtitle">MVP 共 5 个核心页面，三步闭环 + 结果页 + 首页</p>
+
+<div class="section">
+  <div class="section-label">页面流程</div>
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="icon">🏠</div>
+      <div class="name">首页</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="icon">📸</div>
+      <div class="name">拍照抠图</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="icon">✂️</div>
+      <div class="name">拼贴编辑</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="icon">✨</div>
+      <div class="name">生成中</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="icon">🎭</div>
+      <div class="name">结果展示</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-label">各页面功能</div>
+  <div class="pages">
+    <div class="page-card">
+      <div class="page-num">1</div>
+      <div class="page-info">
+        <h4>首页 / 创作入口</h4>
+        <div class="page-desc">启动页，展示产品介绍和"开始创作"按钮</div>
+        <div class="page-features">
+          <span class="feat-tag">产品介绍</span>
+          <span class="feat-tag">开始创作按钮</span>
+          <span class="feat-tag">最近作品（可选）</span>
+        </div>
+      </div>
+    </div>
+    <div class="page-card">
+      <div class="page-num">2</div>
+      <div class="page-info">
+        <h4>拍照 / 上传页</h4>
+        <div class="page-desc">调用相机拍照或从相册选图，自动抠图并预览结果</div>
+        <div class="page-features">
+          <span class="feat-tag">拍照 / 相册选择</span>
+          <span class="feat-tag">AI 自动抠图</span>
+          <span class="feat-tag">抠图结果预览</span>
+          <span class="feat-tag">重拍 / 确认</span>
+        </div>
+      </div>
+    </div>
+    <div class="page-card">
+      <div class="page-num">3</div>
+      <div class="page-info">
+        <h4>拼贴编辑器</h4>
+        <div class="page-desc">自由画布，把抠好的部件拖动、缩放、旋转，组合成角色</div>
+        <div class="page-features">
+          <span class="feat-tag">Canvas 自由画布</span>
+          <span class="feat-tag">拖拽 / 缩放 / 旋转</span>
+          <span class="feat-tag">添加新部件</span>
+          <span class="feat-tag">删除 / 图层调整</span>
+          <span class="feat-tag">生成角色按钮</span>
+        </div>
+      </div>
+    </div>
+    <div class="page-card">
+      <div class="page-num">4</div>
+      <div class="page-info">
+        <h4>生成加载页</h4>
+        <div class="page-desc">AI 生成中的等待动画，给用户预期</div>
+        <div class="page-features">
+          <span class="feat-tag">加载动画</span>
+          <span class="feat-tag">进度提示</span>
+          <span class="feat-tag">趣味文案</span>
+        </div>
+      </div>
+    </div>
+    <div class="page-card">
+      <div class="page-num">5</div>
+      <div class="page-info">
+        <h4>结果展示页</h4>
+        <div class="page-desc">展示 AI 生成的角色立绘和档案故事，支持保存和分享</div>
+        <div class="page-features">
+          <span class="feat-tag">角色立绘展示</span>
+          <span class="feat-tag">档案故事卡片</span>
+          <span class="feat-tag">保存图片</span>
+          <span class="feat-tag">分享链接</span>
+          <span class="feat-tag">再来一个</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-label">后端 API（MVP）</div>
+  <table class="api-table">
+    <tr>
+      <th>方法</th>
+      <th>接口</th>
+      <th>说明</th>
+    </tr>
+    <tr>
+      <td><span class="method post">POST</span></td>
+      <td>/api/generate/character</td>
+      <td>提交拼贴，生成角色立绘+故事</td>
+    </tr>
+    <tr>
+      <td><span class="method get">GET</span></td>
+      <td>/api/generate/{id}</td>
+      <td>查询生成结果（轮询用）</td>
+    </tr>
+    <tr>
+      <td><span class="method post">POST</span></td>
+      <td>/api/works</td>
+      <td>保存作品到服务器（可选）</td>
+    </tr>
+    <tr>
+      <td><span class="method get">GET</span></td>
+      <td>/api/works/{id}</td>
+      <td>获取单个作品详情</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section">
+  <div class="section-label">核心数据模型</div>
+  <div class="data-model">
+<span class="key">Work</span> { <span class="comment">// 作品</span>
+  &nbsp;&nbsp;<span class="key">id</span>: <span class="type">Long</span>,
+  &nbsp;&nbsp;<span class="key">collageImage</span>: <span class="type">String</span>, <span class="comment">// 拼贴图 URL</span>
+  &nbsp;&nbsp;<span class="key">characterImage</span>: <span class="type">String</span>, <span class="comment">// AI 生成立绘 URL</span>
+  &nbsp;&nbsp;<span class="key">characterName</span>: <span class="type">String</span>, <span class="comment">// 角色名</span>
+  &nbsp;&nbsp;<span class="key">characterStory</span>: <span class="type">String</span>, <span class="comment">// 档案故事</span>
+  &nbsp;&nbsp;<span class="key">status</span>: <span class="type">Enum</span>, <span class="comment">// GENERATING / DONE / FAILED</span>
+  &nbsp;&nbsp;<span class="key">createdAt</span>: <span class="type">DateTime</span>
+}
+  </div>
+</div>
+
+</body>
+</html>
