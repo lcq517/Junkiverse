@@ -117,6 +117,11 @@ const App = {
                 break;
             case 'editor':
                 CanvasEditor.init();
+                const btn = document.getElementById('btn-generate');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = '生成角色 ✨';
+                }
                 break;
             case 'generating':
                 this.startGenerating();
