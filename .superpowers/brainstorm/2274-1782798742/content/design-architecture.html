@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>整体架构设计</title>
+<style>
+  :root {
+    --bg-primary: #f5f5f7;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #e5e5e7;
+    --border: #d1d1d6;
+    --text-primary: #1d1d1f;
+    --text-secondary: #86868b;
+    --text-tertiary: #aeaeb2;
+    --accent: #0071e3;
+    --accent-hover: #0077ed;
+    --success: #34c759;
+    --warning: #ff9f0a;
+    --error: #ff3b30;
+    --green-deep: #0F5132;
+    --green: #2E7D32;
+    --green-soft: #4CAF50;
+    --mint: #E8F5E9;
+    --amber: #F59E0B;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-primary: #1d1d1f;
+      --bg-secondary: #2d2d2f;
+      --bg-tertiary: #3d3d3f;
+      --border: #424245;
+      --text-primary: #f5f5f7;
+      --text-secondary: #86868b;
+      --text-tertiary: #636366;
+      --accent: #0a84ff;
+      --accent-hover: #409cff;
+      --success: #30d158;
+      --warning: #ff9f0a;
+      --error: #ff453a;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding: 2rem;
+    line-height: 1.6;
+  }
+  h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary); }
+  .subtitle { color: var(--text-secondary); margin-bottom: 1.5rem; max-width: 800px; }
+  .section { margin-bottom: 2rem; max-width: 800px; }
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+
+  .arch-diagram {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .arch-layer {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    align-items: stretch;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .arch-layer:last-child { margin-bottom: 0; }
+  .arch-node {
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    min-width: 120px;
+    flex: 1;
+    max-width: 180px;
+    font-size: 0.85rem;
+  }
+  .arch-node.frontend { background: #dbeafe; color: #1e40af; }
+  .arch-node.backend { background: #d1fae5; color: #065f46; }
+  .arch-node.external { background: #fef3c7; color: #92400e; }
+  .arch-node .icon { font-size: 1.5rem; margin-bottom: 0.25rem; }
+  .arch-node .name { font-weight: 600; margin-bottom: 0.15rem; }
+  .arch-node .desc { font-size: 0.7rem; opacity: 0.8; }
+  .arch-arrow {
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 1rem;
+    margin: 0.5rem 0;
+  }
+
+  .dataflow {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .flow-step {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .flow-step:last-child { border-bottom: none; }
+  .step-num {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .step-content { flex: 1; font-size: 0.85rem; }
+  .step-content strong { color: var(--text-primary); }
+  .step-content .note { color: var(--text-secondary); font-size: 0.75rem; margin-top: 0.2rem; }
+
+  .tech-stack {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .stack-col {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+  }
+  .stack-col h4 {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    color: var(--accent);
+  }
+  .stack-col ul { list-style: none; font-size: 0.8rem; }
+  .stack-col li {
+    padding: 0.25rem 0;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .stack-col li::before {
+    content: '';
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 600px) {
+    .tech-stack { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<h2>整体架构设计</h2>
+<p class="subtitle">Spring Boot + 前端单页应用，前端负责抠图和拼贴，后端负责 AI 调用和数据存储</p>
+
+<div class="section">
+  <div class="section-label">系统架构</div>
+  <div class="arch-diagram">
+    <div class="arch-layer">
+      <div class="arch-node frontend">
+        <div class="icon">📱</div>
+        <div class="name">前端 H5</div>
+        <div class="desc">拍照 / 抠图 / 拼贴</div>
+      </div>
+    </div>
+    <div class="arch-arrow">↓ HTTP / WebSocket</div>
+    <div class="arch-layer">
+      <div class="arch-node backend">
+        <div class="icon">☕</div>
+        <div class="name">Spring Boot</div>
+        <div class="desc">AI 代理 / 作品存储</div>
+      </div>
+    </div>
+    <div class="arch-arrow">↓ API 调用</div>
+    <div class="arch-layer">
+      <div class="arch-node external">
+        <div class="icon">🎨</div>
+        <div class="name">AI 绘画 API</div>
+        <div class="desc">角色立绘生成</div>
+      </div>
+      <div class="arch-node external">
+        <div class="icon">📝</div>
+        <div class="name">AI 文本 API</div>
+        <div class="desc">档案故事生成</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-label">核心数据流</div>
+  <div class="dataflow">
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>用户拍照 / 上传图片</strong>
+        <div class="note">前端调用相机或文件选择，图片在本地处理</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>前端 AI 抠图</strong>
+        <div class="note">使用浏览器端模型（@imgly/background-removal）本地抠图，零延迟，零成本</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>2D 自由拼贴</strong>
+        <div class="note">用户在 Canvas 上拖动、缩放、旋转部件，组合成角色</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>提交生成请求</strong>
+        <div class="note">前端导出拼贴图 + 部件信息，发送到后端</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <strong>后端调用 AI API</strong>
+        <div class="note">拼接 prompt，调用 AI 绘画和文本生成接口</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <strong>返回结果 + 保存作品</strong>
+        <div class="note">返回角色立绘和档案故事，可选保存到服务器</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-label">技术栈</div>
+  <div class="tech-stack">
+    <div class="stack-col">
+      <h4>前端</h4>
+      <ul>
+        <li>HTML5 + CSS3 + Vanilla JS（MVP 阶段）</li>
+        <li>Canvas API — 拼贴编辑器</li>
+        <li>@imgly/background-removal — 前端抠图</li>
+        <li>响应式设计，移动端优先</li>
+      </ul>
+    </div>
+    <div class="stack-col">
+      <h4>后端</h4>
+      <ul>
+        <li>Spring Boot 3.x + Java 17</li>
+        <li>Spring Web — REST API</li>
+        <li>MySQL / H2 — 作品数据存储</li>
+        <li>RestTemplate / WebClient — AI API 调用</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
