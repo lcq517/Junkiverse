@@ -19,7 +19,7 @@ const App = {
 
     startDemo() {
         console.log('启动快速体验模式...');
-        CanvasEditor.clear();
+        this.navigate('editor');
 
         const demoParts = [
             { name: '瓶盖', color: '#E91E63', size: 60, x: 0.35, y: 0.3 },
@@ -28,9 +28,10 @@ const App = {
             { name: '纸盒', color: '#8BC34A', size: 70, x: 0.5, y: 0.85 }
         ];
 
-        let addedCount = 0;
-        demoParts.forEach((part, index) => {
-            setTimeout(() => {
+        setTimeout(() => {
+            CanvasEditor.clear();
+
+            demoParts.forEach((part, index) => {
                 const imageData = this.createDemoPartImage(part.color, part.size, part.name);
                 CanvasEditor.addPart(imageData, part.name);
 
@@ -43,19 +44,12 @@ const App = {
                     lastPart.scale = 0.8 + Math.random() * 0.4;
                     lastPart.zIndex = index;
                 }
+            });
 
-                addedCount++;
-                if (addedCount === demoParts.length) {
-                    CanvasEditor.render();
-                    CanvasEditor.selectPart(null);
-                }
-            }, index * 100);
-        });
-
-        setTimeout(() => {
-            this.navigate('editor');
+            CanvasEditor.render();
+            CanvasEditor.selectPart(null);
             Toast.show('已加载 4 个示例部件，试试拖拽拼贴吧！');
-        }, demoParts.length * 100 + 100);
+        }, 200);
     },
 
     createDemoPartImage(color, size, name) {
