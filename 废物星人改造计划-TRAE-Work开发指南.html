@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>废物星人改造计划 · TRAE Work 开发指南</title>
+<style>
+  :root{
+    --green-deep:#0F5132;
+    --green:#2E7D32;
+    --green-soft:#4CAF50;
+    --mint:#E8F5E9;
+    --mint-2:#F1F8E9;
+    --amber:#F59E0B;
+    --amber-soft:#FEF3C7;
+    --blue:#2563EB;
+    --blue-soft:#DBEAFE;
+    --purple:#7C3AED;
+    --purple-soft:#EDE9FE;
+    --ink:#1f2937;
+    --ink-soft:#4b5563;
+    --line:#e5e7eb;
+    --bg:#fbfaf6;
+    --card:#ffffff;
+    --radius:18px;
+    --shadow:0 10px 30px rgba(15,81,50,.08);
+    --shadow-lg:0 18px 50px rgba(15,81,50,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","HarmonyOS Sans SC",-apple-system,sans-serif;
+    color:var(--ink);
+    background:var(--bg);
+    line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+  /* HERO */
+  .hero{
+    position:relative;overflow:hidden;
+    background:radial-gradient(1200px 500px at 80% -10%, rgba(37,99,235,.18), transparent 60%),
+               radial-gradient(900px 500px at 0% 0%, rgba(76,175,80,.22), transparent 55%),
+               linear-gradient(180deg,#0c1f3d 0%, #142a4f 100%);
+    color:#fff;padding:64px 0 56px;
+  }
+  .hero::after{
+    content:"";position:absolute;inset:0;
+    background-image:radial-gradient(rgba(255,255,255,.08) 1px, transparent 1px);
+    background-size:22px 22px;opacity:.5;pointer-events:none;
+  }
+  .hero h1{font-size:clamp(28px,4vw,44px);line-height:1.2;font-weight:800;letter-spacing:-.3px;margin-bottom:12px;position:relative}
+  .hero .sub{font-size:17px;color:rgba(255,255,255,.78);max-width:620px;position:relative}
+  .hero .meta{display:flex;gap:12px;margin-top:20px;position:relative;flex-wrap:wrap}
+  .hero .meta span{font-size:13px;padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2)}
+
+  /* TOC */
+  .toc{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:28px 32px;margin:32px 0;box-shadow:var(--shadow)}
+  .toc h3{font-size:18px;color:var(--ink);margin-bottom:16px}
+  .toc ol{list-style:none;counter-reset:toc}
+  .toc li{counter-increment:toc;margin-bottom:8px}
+  .toc li::before{content:counter(toc,decimal-leading-zero);font-weight:800;color:var(--blue);margin-right:10px;font-size:13px}
+  .toc a{color:var(--ink-soft);text-decoration:none;font-size:15px;transition:color .2s}
+  .toc a:hover{color:var(--blue)}
+
+  /* SECTION */
+  section{padding:48px 0}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:700;letter-spacing:2px;color:var(--blue);text-transform:uppercase;margin-bottom:8px}
+  .sec-title{font-size:28px;font-weight:800;color:var(--ink);margin-bottom:6px;letter-spacing:-.3px}
+  .sec-desc{color:var(--ink-soft);max-width:720px;margin-bottom:28px;font-size:15px}
+
+  /* CARD */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);margin-bottom:20px}
+  .card h3{font-size:19px;margin-bottom:10px;color:var(--ink)}
+  .card h4{font-size:16px;margin:16px 0 8px;color:var(--green-deep)}
+  .card p{color:var(--ink-soft);font-size:15px;margin-bottom:8px}
+  .card ul{margin:8px 0 8px 20px}
+  .card li{font-size:14.5px;color:var(--ink-soft);margin-bottom:4px}
+
+  /* PHASE BADGE */
+  .phase-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#fff;padding:4px 12px;border-radius:999px;margin-bottom:10px}
+  .phase-badge.setup{background:var(--blue)}
+  .phase-badge.design{background:var(--purple)}
+  .phase-badge.plan{background:var(--green-deep)}
+  .phase-badge.backend{background:var(--green)}
+  .phase-badge.android{background:var(--amber);color:#1f2937}
+  .phase-badge.test{background:#8b5cf6}
+  .phase-badge.deploy{background:#dc2626}
+
+  /* STEP LIST */
+  .steps{display:grid;gap:16px}
+  .step-item{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);position:relative}
+  .step-num{position:absolute;top:-12px;left:20px;width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 4px 10px rgba(37,99,235,.3)}
+  .step-item h4{font-size:17px;margin:6px 0 8px;color:var(--ink)}
+  .step-item .prompt{background:var(--mint);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:10px 0;font-size:13.5px;color:var(--green-deep);font-family:monospace;line-height:1.6;white-space:pre-wrap}
+  .step-item .tip{background:var(--amber-soft);border-left:3px solid var(--amber);border-radius:8px;padding:10px 14px;margin:8px 0;font-size:13px;color:#92400e}
+  .step-item .warn{background:#fef2f2;border-left:3px solid #ef4444;border-radius:8px;padding:10px 14px;margin:8px 0;font-size:13px;color:#991b1b}
+  .step-item .done{background:var(--mint-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:8px 0;font-size:13px;color:var(--green-deep)}
+  .step-item .done strong{color:var(--green)}
+
+  /* ARCH TABLE */
+  .arch-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+  .arch-table th{background:var(--mint);color:var(--green-deep);padding:10px 14px;text-align:left;border-radius:8px;font-size:13px}
+  .arch-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink-soft)}
+  .arch-table tr:last-child td{border-bottom:none}
+
+  /* FLOW */
+  .flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 0}
+  .flow .node{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--ink);box-shadow:var(--shadow)}
+  .flow .arrow{color:var(--green-soft);font-size:18px}
+
+  /* CALLOUT */
+  .callout{background:linear-gradient(135deg,var(--blue-soft),var(--mint));border:1px solid var(--line);border-radius:var(--radius);padding:28px;margin:24px 0}
+  .callout h3{font-size:18px;color:var(--blue);margin-bottom:10px}
+  .callout p{font-size:14.5px;color:var(--ink-soft)}
+
+  /* FOOTER */
+  footer{background:var(--green-deep);color:rgba(255,255,255,.8);padding:36px 0;text-align:center;font-size:13px}
+  footer .logo{font-size:16px;font-weight:800;color:#fff;margin-bottom:6px}
+
+  @media(max-width:768px){
+    .hero{padding:48px 0 40px}
+    section{padding:36px 0}
+    .sec-title{font-size:22px}
+    .toc{padding:20px 24px}
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <h1>废物星人改造计划<br>TRAE Work 逐步开发指南</h1>
+    <p class="sub">从零开始，使用 TRAE Work Code 模式 + Spec 工作流，一步步完成 Android App（Java 原生）+ Spring Boot 后端的全栈开发。</p>
+    <div class="meta">
+      <span>TRAE Work</span>
+      <span>Spec 工作流</span>
+      <span>Java 原生 Android</span>
+      <span>Spring Boot</span>
+      <span>7 个阶段</span>
+    </div>
+  </div>
+</header>
+
+<!-- TOC -->
+<div class="wrap">
+<div class="toc">
+<h3>目录</h3>
+<ol>
+<li><a href="#phase0">阶段 0 · 环境准备与项目初始化</a></li>
+<li><a href="#phase1">阶段 1 · 需求细化与 UI 设计</a></li>
+<li><a href="#phase2">阶段 2 · 系统架构规划（Spec 工作流）</a></li>
+<li><a href="#phase3">阶段 3 · 后端开发（Spring Boot）</a></li>
+<li><a href="#phase4">阶段 4 · Android 客户端开发</a></li>
+<li><a href="#phase5">阶段 5 · 前后端联调与测试</a></li>
+<li><a href="#phase6">阶段 6 · 部署上线与参赛提交</a></li>
+</ol>
+</div>
+</div>
+
+<!-- ARCH OVERVIEW -->
+<section>
+<div class="wrap">
+<span class="eyebrow">架构总览</span>
+<h2 class="sec-title">技术架构一览</h2>
+<p class="sec-desc">基于创意文档的三步魔法闭环，拆解为前后端对应的技术模块。</p>
+
+<div class="card">
+<h3>三步魔法闭环 → 技术映射</h3>
+<div class="flow">
+<span class="node">📷 拍照</span>
+<span class="arrow">→</span>
+<span class="node">AI 抠图</span>
+<span class="arrow">→</span>
+<span class="node">保存素材</span>
+</div>
+<div class="flow">
+<span class="node">✂️ 2D 拼贴</span>
+<span class="arrow">→</span>
+<span class="node">画布编辑器</span>
+<span class="arrow">→</span>
+<span class="node">保存拼贴原型</span>
+</div>
+<div class="flow">
+<span class="node">🎨 AI 生成</span>
+<span class="arrow">→</span>
+<span class="node">角色立绘 + 故事档案</span>
+<span class="arrow">→</span>
+<span class="node">分享</span>
+</div>
+
+<table class="arch-table">
+<thead><tr><th>模块</th><th>技术栈</th><th>核心能力</th></tr></thead>
+<tbody>
+<tr><td>Android 客户端</td><td>Java + Android SDK</td><td>CameraX 相机、抠图画布、拼贴编辑器、分享</td></tr>
+<tr><td>后端 API 服务</td><td>Java + Spring Boot</td><td>用户认证、素材管理、任务调度、结果返回</td></tr>
+<tr><td>AI 抠图服务</td><td>抠图模型 API（如 rembg / U2Net）</td><td>接收图片 → 返回透明背景 PNG</td></tr>
+<tr><td>AI 角色生成服务</td><td>文生图模型 API（如豆包 / Seedream）</td><td>基于拼贴原型 → 生成精美角色立绘</td></tr>
+<tr><td>AI 故事生成服务</td><td>大语言模型 API（如豆包大模型）</td><td>基于角色外观 → 生成幽默档案故事</td></tr>
+<tr><td>数据存储</td><td>MySQL + 对象存储（如火山引擎 TOS）</td><td>用户数据、素材文件、生成结果</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+
+<!-- PHASE 0 -->
+<section id="phase0" style="background:linear-gradient(180deg,#fff,var(--blue-soft))">
+<div class="wrap">
+<span class="eyebrow">Stage 00</span>
+<span class="phase-badge setup">PHASE 0</span>
+<h2 class="sec-title">环境准备与项目初始化</h2>
+<p class="sec-desc">创建 GitHub 仓库、在 TRAE Work 中初始化项目、配置云端运行环境、安装必备技能。</p>
+
+<div class="steps">
+
+<div class="step-item">
+<span class="step-num">1</span>
+<h4>创建 GitHub 仓库</h4>
+<p>在 GitHub 上创建一个新仓库，用于存放全部前后端代码。建议命名：</p>
+<div class="prompt">Junkiverse</div>
+<p>初始化时勾选 "Add a README file"，选择 .gitignore 模板为 Java。</p>
+<div class="tip"><strong>💡 提示：</strong>建议仓库结构设为 monorepo，即客户端和服务端代码放在同一仓库的不同目录下，方便 AI 同时理解前后端上下文。</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">2</span>
+<h4>安装并打开 TRAE Work</h4>
+<p>前往 <a href="https://www.trae.cn/ide/download" target="_blank">TRAE Work 下载页</a> 下载桌面版，或直接使用 <a href="https://work.trae.cn/" target="_blank">网页版</a>。登录账号后，在界面左上角切换至 <strong>Code 模式</strong>。</p>
+<div class="tip"><strong>💡 建议桌面版：</strong>桌面版支持本地和云端双环境，适合长期复杂项目开发。网页版适合外出时快速查看任务进度。</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">3</span>
+<h4>集成 GitHub 到 TRAE Work</h4>
+<p>在界面左下角点击 头像 → 设置 → 外部应用授权，找到 GitHub 应用并点击 连接。按页面提示登录 GitHub 账号并授权 TRAE-AI CN 访问你的代码仓库。</p>
+<div class="done"><strong>✅ 完成后：</strong>你可以在 TRAE Work 中直接选择 GitHub 仓库作为项目开发，后续也可以让 AI 自动创建 PR。</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">4</span>
+<h4>在 TRAE Work 中打开项目</h4>
+<p>桌面版：打开从 GitHub 拉取的项目。在对话框左下方选择运行环境为云端，然后选择你创建的仓库。</p>
+<p>网页版：直接在对话框中发送指令，网页版会自动为你创建项目。</p>
+</div>
+
+<div class="step-item">
+<span class="step-num">5</span>
+<h4>配置云端运行环境</h4>
+<p>本项目需要 Java 运行环境（Spring Boot 后端 + Android 客户端编译）。在 头像 → 设置 → 云端运行环境 中点击 创建，配置如下：</p>
+<div class="prompt">环境名称：Waste Alien Dev
+预装依赖：Java 17
+环境变量：
+  SPRING_PROFILES_ACTIVE=dev
+  SERVER_PORT=8080
+运行时配置：
+  install: mvn clean install -DskipTests
+  start: mvn spring-boot:run</div>
+<div class="tip"><strong>💡 说明：</strong>Java 17 是 Spring Boot 3.x 的最低要求，也是 Android 编译的兼容版本。云端环境会自动安装 Maven 依赖并启动后端服务。</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">6</span>
+<h4>安装必备技能</h4>
+<p>在左侧任务栏点击 技能，进入技能市场，搜索并安装以下技能：</p>
+<table class="arch-table">
+<thead><tr><th>技能名称</th><th>用途</th></tr></thead>
+<tbody>
+<tr><td>brainstorming</td><td>需求细化与设计方案梳理，阶段1使用</td></tr>
+<tr><td>git-commit</td><td>生成规范的 Git 提交信息，全流程使用</td></tr>
+<tr><td>webapp-testing</td><td>后端 API 自动化测试，阶段5使用</td></tr>
+<tr><td>agent-browser</td><td>后端接口的浏览器端测试，阶段5使用</td></tr>
+</tbody>
+</table>
+<div class="tip"><strong>💡 技能按需加载：</strong>技能不会占用上下文窗口，AI 会在需要时自动调用。你也可以在对话框中输入 / 手动调用。</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">7</span>
+<h4>设置项目规则</h4>
+<p>在 头像 → 设置 → 规则 中创建以下全局规则，让 AI 的输出始终符合项目要求：</p>
+<div class="prompt">规则1：所有代码注释和文档使用中文。
+规则2：后端代码遵循 Spring Boot 3.x 规范，使用 Java 17 语法。
+规则3：Android 客户端使用 Java 原生开发，不使用 Kotlin。
+规则4：API 接口返回统一格式的 JSON 响应体 { code, message, data }。
+规则5：所有 API 接口需要添加中文注释，说明接口用途和参数含义。</div>
+</div>
+
+</div>
+</div>
+</section>
+
+<!-- PHASE 1 -->
+<section id="phase1">
+<div class="wrap">
+<span class="eyebrow">Stage 01</span>
+<span class="phase-badge design">PHASE 1</span>
+<h2 class="sec-title">需求细化与 UI 设计</h2>
+<p class="sec-desc">使用 brainstorming 技能细化需求，用 Design 模式生成 UI 原型，为后续开发奠定设计基础。</p>
+
+<div class="steps">
+
+<div class="step-item">
+<span class="step-num">1</span>
+<h4>使用 brainstorming 技能细化需求</h4>
+<p>在对话框中输入以下指令，启动头脑风暴技能。AI 会通过一系列提问帮你梳理产品需求、核心功能和设计偏好。</p>
+<div class="prompt">/brainstorming
+
+我要开发一款名为"废物星人改造计划"的 Android App。
+核心创意：用 AI 复活废弃物品的创意拼贴 App。
+核心闭环：拍照抠图 → 2D 拼贴 → AI 生成角色立绘与故事。
+技术栈：Java 原生 Android + Spring Boot 后端。
+请帮我梳理完整的产品需求、功能模块清单和 MVP 版本范围。</div>
+<div class="tip"><strong>💡 回答技巧：</strong>brainstorming 技能会逐个提问（目标用户、核心功能、设计偏好等），建议认真回答每一个问题，这会直接影响后续 Spec 文档的质量。</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">2</span>
+<h4>确认需求文档并保存</h4>
+<p>brainstorming 技能最终会输出一份结构化的需求设计方案。仔细阅读后，可以直接编辑修改，或用自然语言告诉 AI 你希望调整的部分。确认后，这份文档将作为后续 Spec 工作流的输入。</p>
+<div class="done"><strong>✅ 完成后：</strong>你应该得到一份包含以下内容的需求文档：产品定位、MVP 功能清单、核心用户旅程、页面列表、API 接口列表、AI 模型选型建议。</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">3</span>
+<h4>使用 Design 模式生成 UI 原型</h4>
+<p>切换到 Design 模式（界面左上角），为 App 的核心页面生成高保真设计稿。逐个页面发起设计任务：</p>
+<div class="prompt">设计一个 Android App 的首页。
+
+App 名称：废物星人改造计划
+主题：旧物改造 + AI 拼贴 + 环保创意
+配色：深绿色主色调 + 琥珀色点缀 + 薄荷绿背景
+首页内容：
+- 顶部：App 名称 + logo
+- 中间：大按钮"开始创作"（拍照入口）
+- 下方：最近作品横向滚动列表
+- 底部：导航栏（首页 / 我的作品 / 发现）</div>
+<p>按照同样的方式，依次生成以下页面的设计稿：</p>
+<ul>
+<li>拍照抠图页：相机预览 + 拍照按钮 + 抠图结果展示</li>
+<li>拼贴编辑器页：部件库 + 画布 + 工具栏（缩放/旋转/删除）</li>
+<li>AI 生成结果页：角色立绘大图 + 故事档案文字 + 分享按钮</li>
+<li>我的作品集页：作品瀑布流 + 每个作品的角色立绘缩略图</li>
+<li>发现/社区页：其他用户的创意作品展示</li>
+</ul>
+<div class="tip"><strong>💡 设计迭代：</strong>生成设计稿后，可以在画布中选中元素，点击"添加到对话"，用自然语言描述修改需求让 AI 继续迭代。</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">4</span>
+<h4>导出设计稿并准备转入 Code 模式</h4>
+<p>在 Design 模式的画布中，选中所有设计稿，点击顶部导航栏的 ··· → 导出设计文件 → 在 Code 模式中开发。TRAE Work 会自动打开 Code 模式窗口，将设计稿打包为 .zip 并添加到对话输入框。</p>
+<div class="done"><strong>✅ 完成后：</strong>你将获得完整的 UI 设计稿，并已自动转入 Code 模式，准备开始架构规划。</div>
+</div>
+
+</div>
+</div>
+</section>
+
+<!-- PHASE 2 -->
+<section id="phase2" style="background:linear-gradient(180deg,var(--mint-2),#fff)">
+<div class="wrap">
+<span class="eyebrow">Stage 02</span>
+<span class="phase-badge plan">PHASE 2</span>
+<h2 class="sec-title">系统架构规划（Spec 工作流）</h2>
+<p class="sec-desc">使用 Spec 工作流生成完整的三阶段文档（spec.md / tasks.md / checklist.md），这是整个项目开发的路线图。</p>
+
+<div class="callout">
+<h3>为什么用 Spec 工作流？</h3>
+<p>这是一个从零搭建的完整系统，需求范围大、架构决策多。Spec 工作流会先生成完整的大纲文档，确认后再执行，避免开发到一半发现方向偏差。文档会保存在项目的 .trae/specs/ 目录中，作为长期知识资产。</p>
+</div>
+
+<div class="steps">
+
+<div class="step-item">
+<span class="step-num">1</span>
+<h4>发起 Spec 工作流</h4>
+<p>在 Code 模式的对话框中输入 /，然后从列表中选择 Spec（或直接输入 /spec 并回车）。然后发送你的需求指令：</p>
+<div class="prompt">/spec
+
+我要从零开发一款名为"废物星人改造计划"的 Android App。
+
+【核心创意】
+用 AI 复活废弃物品的创意拼贴 App：拍照抠图 → 2D 拼贴 → AI 生成角色立绘与故事。
+
+【技术栈】
+- Android 客户端：Java 原生开发（不使用 Kotlin）
+- 后端 API：Java + Spring Boot 3.x
+- AI 抠图：对接抠图模型 API
+- AI 角色生成：对接文生图模型 API
+- AI 故事生成：对接大语言模型 API
+- 数据存储：MySQL + 对象存储
+
+【核心功能模块】
+1. 拍照抠图模块：CameraX 相机拍照 → 调用后端抠图 API → 返回透明背景 PNG
+2. 拼贴编辑器模块：拖拽/缩放/旋转部件 → 组合拼贴 → 保存拼贴原型
+3. AI 生成模块：上传拼贴原型 → 调用 AI 生成角色立绘 + 故事档案
+4. 作品管理模块：作品列表/详情/删除/分享
+5. 用户系统模块：注册/登录/Token 管理
+
+【参考设计稿】
+已通过 Design 模式生成了首页、拍照页、拼贴编辑器页、AI 生成结果页、作品集页的 UI 设计稿（见附件）。
+
+请帮我生成完整的系统 Spec 文档，包括：
+- 系统架构设计
+- 前后端模块拆分
+- API 接口定义
+- 数据库模型设计
+- 开发任务拆解
+- 验收标准</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">2</span>
+<h4>审阅并确认 Spec 文档</h4>
+<p>AI 会生成三份文档，存放在 .trae/specs/ 目录下：</p>
+<table class="arch-table">
+<thead><tr><th>文档</th><th>用途</th></tr></thead>
+<tbody>
+<tr><td>spec.md</td><td>系统架构大纲：技术选型、模块划分、数据模型、API 设计</td></tr>
+<tr><td>tasks.md</td><td>开发任务列表：按模块拆解的具体开发任务，带优先级和依赖关系</td></tr>
+<tr><td>checklist.md</td><td>验收清单：每个模块的验收标准，用于确认开发是否达标</td></tr>
+</tbody>
+</table>
+<p>文档首次创建时，AI 会暂停执行并等待你的确认。你可以：</p>
+<ul>
+<li>直接在文档中编辑修改</li>
+<li>用自然语言告诉 AI 你希望修改的部分，如："数据库模型请增加一个素材标签表"、"API 设计请增加分页参数规范"</li>
+</ul>
+<div class="tip"><strong>💡 审阅重点：</strong>重点检查 API 接口定义是否覆盖所有功能、数据模型是否合理、任务拆解的粒度是否适中（每个任务建议 1-4 小时可完成）。确认后 AI 会按 tasks.md 的顺序逐步执行。</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">3</span>
+<h4>确认项目目录结构</h4>
+<p>Spec 文档确认后，让 AI 先创建项目的 monorepo 目录结构：</p>
+<div class="prompt">请先创建项目的 monorepo 目录结构：
+
+waste-alien-revival-plan/
+├── backend/                 # Spring Boot 后端
+│   ├── src/main/java/
+│   ├── src/main/resources/
+│   └── pom.xml
+├── android/                 # Android 客户端
+│   ├── app/src/main/java/
+│   ├── app/src/main/res/
+│   └── build.gradle
+├── docs/                    # 项目文档
+│   └── api-spec.md          # API 接口文档
+├── .trae/specs/             # Spec 文档（自动生成）
+└── README.md</div>
+<div class="done"><strong>✅ 完成后：</strong>你将获得一份完整的系统架构规划文档，后续所有开发工作都会基于这份文档进行。</div>
+</div>
+
+</div>
+</div>
+</section>
+
+<!-- PHASE 3 -->
+<section id="phase3" style="background:linear-gradient(180deg,#fff,var(--mint))">
+<div class="wrap">
+<span class="eyebrow">Stage 03</span>
+<span class="phase-badge backend">PHASE 3</span>
+<h2 class="sec-title">后端开发（Spring Boot）</h2>
+<p class="sec-desc">按照 Spec 文档中的任务列表，逐步开发后端 API 服务。建议使用 Plan 工作流管理每个模块的开发进度。</p>
+
+<div class="steps">
+
+<div class="step-item">
+<span class="step-num">1</span>
+<h4>初始化 Spring Boot 项目</h4>
+<p>在 Code 模式中发送以下指令，让 AI 初始化 Spring Boot 项目骨架：</p>
+<div class="prompt">/plan
+
+请在 backend/ 目录下初始化 Spring Boot 3.x 项目，要求：
+1. 使用 Java 17 + Maven
+2. 引入依赖：Spring Web、Spring Data JPA、MySQL Connector、Lombok、Spring Security（JWT）
+3. 配置 application.yml：数据库连接、文件上传大小限制、JWT 密钥
+4. 创建基础包结构：
+   - com.wastealien.config    # 配置类
+   - com.wastealien.controller # 控制器
+   - com.wastealien.service     # 服务层
+   - com.wastealien.repository  # 数据访问层
+   - com.wastealien.entity      # 实体类
+   - com.wastealien.dto         # DTO
+   - com.wastealien.common      # 通用工具类（统一响应体、异常处理）
+5. 实现统一响应体格式 { code, message, data }
+6. 实现全局异常处理</div>
+<div class="tip"><strong>💡 Plan 工作流：</strong>Plan 适用于中小型功能开发。AI 会先在 .trae/documents/ 下生成 plan.md 计划文档，确认后再执行。比 Spec 更轻量，适合逐模块开发。</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">2</span>
+<h4>开发用户认证模块</h4>
+<p>继续用 Plan 工作流开发用户认证模块：</p>
+<div class="prompt">/plan
+
+开发用户认证模块，包括：
+1. 用户实体类 User（id, username, password, avatar, createdAt）
+2. 用户注册接口 POST /api/auth/register
+3. 用户登录接口 POST /api/auth/login（返回 JWT Token）
+4. JWT 工具类：生成 Token、解析 Token、验证 Token
+5. JWT 拦截器：拦截需要登录的接口，解析并验证 Token
+6. 密码加密：使用 BCryptPasswordEncoder
+7. 单元测试：注册和登录接口的测试用例</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">3</span>
+<h4>开发素材管理模块（抠图对接）</h4>
+<p>开发素材管理模块，包括拍照后的图片上传和 AI 抠图对接：</p>
+<div class="prompt">/plan
+
+开发素材管理模块，包括：
+1. 素材实体类 Material（id, userId, originalImageUrl, cutoutImageUrl, status, createdAt）
+2. 图片上传接口 POST /api/materials/upload（接收 multipart 文件，存储到对象存储）
+3. AI 抠图接口 POST /api/materials/{id}/cutout（调用抠图模型 API，返回透明背景 PNG）
+4. 素材列表接口 GET /api/materials（分页查询当前用户的素材）
+5. 素材删除接口 DELETE /api/materials/{id}
+6. 对象存储工具类：封装文件上传、下载、删除操作
+7. 抠图 API 对接：设计通用的 AI 服务调用接口，方便后续切换不同抠图模型
+
+注意：抠图模型 API 的地址和密钥放在配置文件中，通过 @Value 注入。
+先实现 Mock 模式（直接返回原图），后续再对接真实 API。</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">4</span>
+<h4>开发拼贴作品模块</h4>
+<p>开发拼贴作品模块，管理用户的拼贴创作：</p>
+<div class="prompt">/plan
+
+开发拼贴作品模块，包括：
+1. 作品实体类 Artwork（id, userId, title, collageImageUrl, characterImageUrl, storyContent, status, createdAt）
+2. 保存拼贴原型接口 POST /api/artworks（接收拼贴图片 URL + 标题，创建作品记录，状态为 pending）
+3. 触发 AI 生成接口 POST /api/artworks/{id}/generate（调用 AI 生成角色立绘 + 故事档案）
+4. AI 角色生成对接：调用文生图模型 API，基于拼贴原型图片 + Prompt 生成角色立绘
+5. AI 故事生成对接：调用大语言模型 API，基于角色立绘图片描述生成幽默档案故事
+6. 作品列表接口 GET /api/artworks（分页查询当前用户的作品）
+7. 作品详情接口 GET /api/artworks/{id}
+8. 作品删除接口 DELETE /api/artworks/{id}
+9. 发现/社区接口 GET /api/artworks/discover（分页查询所有用户公开的作品）
+
+注意：AI 生成接口设计为异步模式（先返回 task_id，客户端轮询生成结果）。
+先实现 Mock 模式，后续再对接真实 API。</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">5</span>
+<h4>开发 AI 服务对接层</h4>
+<p>统一管理所有 AI 模型 API 的对接，设计可切换的适配器模式：</p>
+<div class="prompt">/plan
+
+开发 AI 服务对接层，设计适配器模式方便后续切换不同模型服务商：
+
+1. 定义统一接口：
+   - ImageCutoutService：抠图服务接口（输入图片 → 输出透明背景 PNG）
+   - ImageGenerationService：文生图服务接口（输入 Prompt + 参考图 → 输出角色立绘）
+   - TextGenerationService：文本生成服务接口（输入图片描述 → 输出故事档案）
+
+2. 实现 Mock 适配器（开发测试用，返回预设图片和文本）
+
+3. 实现真实适配器（后续对接）：
+   - 抠图：对接 rembg / U2Net 模型 API
+   - 文生图：对接豆包 / Seedream 模型 API
+   - 文本生成：对接豆包大模型 API
+
+4. AI 服务配置管理：在 application.yml 中配置当前启用的适配器、API 地址和密钥
+
+5. 异步任务管理：AI 生成任务的状态管理（pending → processing → success / failed）</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">6</span>
+<h4>使用 git-commit 技能提交代码</h4>
+<p>每完成一个模块的开发，使用 git-commit 技能生成规范的提交信息并提交：</p>
+<div class="prompt">/git-commit
+
+请提交当前所有变更，按 Conventional Commits 规范生成提交信息。</div>
+<div class="tip"><strong>💡 提交频率：</strong>建议每完成一个功能模块就提交一次，保持每次提交只包含一个逻辑变更。这样后续如果需要回退或查看历史，粒度更合适。</div>
+</div>
+
+</div>
+</div>
+</section>
+
+<!-- PHASE 4 -->
+<section id="phase4" style="background:linear-gradient(180deg,var(--amber-soft),#fff)">
+<div class="wrap">
+<span class="eyebrow">Stage 04</span>
+<span class="phase-badge android">PHASE 4</span>
+<h2 class="sec-title">Android 客户端开发</h2>
+<p class="sec-desc">按照 Spec 文档中的任务列表，逐步开发 Android 客户端。使用 Java 原生开发，不使用 Kotlin。</p>
+
+<div class="steps">
+
+<div class="step-item">
+<span class="step-num">1</span>
+<h4>初始化 Android 项目</h4>
+<div class="prompt">/plan
+
+请在 android/ 目录下初始化 Android 项目，要求：
+1. 使用 Java 原生开发（不使用 Kotlin）
+2. 最低 SDK 版本：minSdk 24（Android 7.0）
+3. 目标 SDK 版本：targetSdk 34（Android 14）
+4. 引入依赖：
+   - CameraX：相机拍照功能
+   - OkHttp / Retrofit：网络请求
+   - Gson / Moshi：JSON 解析
+   - Glide：图片加载和缓存
+   - RecyclerView：列表展示
+   - ViewBinding / DataBinding：视图绑定
+   - Material Components：Material Design 组件
+5. 配置 AndroidManifest.xml：相机权限、网络权限、文件存储权限
+6. 创建基础包结构：
+   - com.wastealien.ui          # Activity / Fragment
+   - com.wastealien.ui.adapter   # RecyclerView Adapter
+   - com.wastealien.ui.widget    # 自定义 View
+   - com.wastealien.data         # 数据层（Repository / API Client）
+   - com.wastealien.data.api     # API 接口定义
+   - com.wastealien.data.model   # 数据模型
+   - com.wastealien.util         # 工具类
+   - com.wastealien.widget       # 自定义控件
+7. 实现统一的网络请求客户端（Retrofit + OkHttp + 拦截器）
+8. 实现统一的 API 响应体解析</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">2</span>
+<h4>开发首页和底部导航</h4>
+<div class="prompt">/plan
+
+开发 App 首页和底部导航功能：
+
+1. 首页 Activity（HomeActivity）：
+   - 顶部：App 名称 + Logo
+   - 中间：大按钮"开始创作"（点击跳转到拍照页）
+   - 下方：最近作品横向滚动列表（RecyclerView + HorizontalLayoutManager）
+   - 底部：底部导航栏（首页 / 我的作品 / 发现）
+
+2. 底部导航（BottomNavigationView）：
+   - 三个 Tab：首页、我的作品、发现
+   - 通过 Fragment + NavigationController 实现页面切换
+
+3. 最近作品卡片布局：
+   - 角色立绘缩略图（正方形）
+   - 作品标题
+   - 点击跳转到作品详情页
+
+4. 参考设计稿实现 UI（见附件 Design 模式生成的首页设计稿）</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">3</span>
+<h4>开发拍照抠图模块</h4>
+<div class="prompt">/plan
+
+开发拍照抠图模块，这是 App 的第一个核心步骤：
+
+1. 拍照 Activity（CameraActivity）：
+   - 使用 CameraX 实现相机预览
+   - 拍照按钮（点击 capture 拍照）
+   - 拍照后显示预览图，提供"重拍"和"确认"两个按钮
+   - 确认后调用上传接口
+
+2. 图片上传功能：
+   - 将拍照得到的图片文件通过 multipart/form-data 上传到后端
+   - 上传过程中显示进度条
+   - 上传成功后返回素材 ID
+
+3. AI 抠图功能：
+   - 调用后端抠图接口 POST /api/materials/{id}/cutout
+   - 显示抠图进度（轮询任务状态或 WebSocket）
+   - 抠图完成后显示透明背景 PNG
+   - 提供"保存到素材库"和"去拼贴"两个按钮
+
+4. 素材库页（MaterialLibraryActivity）：
+   - 展示所有已抠图的素材（网格布局）
+   - 点击素材可以查看大图
+   - 长按素材可以删除
+
+5. 相机权限动态申请</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">4</span>
+<h4>开发拼贴编辑器模块</h4>
+<div class="prompt">/plan
+
+开发拼贴编辑器模块，这是 App 的第二个核心步骤，也是技术难度最高的模块：
+
+1. 拼贴编辑器 Activity（CollageActivity）：
+   - 顶部工具栏：撤销、重做、保存
+   - 左侧：部件库（展示用户已抠图的的所有素材，横向滚动）
+   - 中间：画布编辑区域
+   - 右侧：属性面板（缩放、旋转、图层顺序、删除）
+
+2. 画布编辑器核心功能（自定义 View）：
+   - 从部件库拖拽素材到画布上
+   - 单指拖拽移动素材位置
+   - 双指缩放调整素材大小
+   - 双指旋转调整素材角度
+   - 选中素材时显示选中边框和操作手柄
+   - 多素材图层管理（可以调整图层顺序）
+
+3. 图层操作功能：
+   - 图层面板（展示当前所有图层）
+   - 调整图层顺序（上移/下移/置顶/置底）
+   - 删除选中图层
+   - 复制选中图层
+
+4. 保存拼贴作品：
+   - 将画布内容导出为一张完整图片
+   - 调用后端接口 POST /api/artworks 保存拼贴作品
+   - 保存成功后跳转到 AI 生成页
+
+5. 参考设计稿实现 UI（见附件 Design 模式生成的拼贴编辑器页设计稿）
+
+注意：拖拽和多点触控是这个模块的核心难点，需要仔细处理触摸事件分发。
+建议先实现基础的单指拖拽和双指缩放，再逐步添加旋转和图层管理功能。</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">5</span>
+<h4>开发 AI 生成结果模块</h4>
+<div class="prompt">/plan
+
+开发 AI 生成结果模块，这是 App 的第三个核心步骤：
+
+1. AI 生成页 Activity（GenerateActivity）：
+   - 接收拼贴作品 ID
+   - 点击"开始生成"按钮，调用后端接口 POST /api/artworks/{id}/generate
+   - 生成过程中显示动画进度（可以是一个有趣的等待动画）
+   - 轮询任务状态，生成完成后展示结果
+
+2. AI 生成结果展示页（ResultActivity）：
+   - 上方：AI 生成的角色立绘大图（支持双击放大查看细节）
+   - 下方：AI 生成的幽默档案故事（文字内容，支持滚动）
+   - 底部按钮栏：保存到作品集、分享到社交平台、重新生成
+
+3. 分享功能：
+   - 将角色立绘 + 故事档案合成一张分享图
+   - 调用系统分享面板（Intent.ACTION_SEND）
+   - 支持分享到微信、朋友圈、微博等主流平台
+
+4. 重新生成功能：
+   - 允许用户对生成结果不满意时重新生成
+   - 限制重新生成次数（每日 3 次免费）
+
+5. 参考设计稿实现 UI（见附件 Design 模式生成的 AI 生成结果页设计稿）</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">6</span>
+<h4>开发作品集和发现模块</h4>
+<div class="prompt">/plan
+
+开发作品集和发现模块：
+
+1. 我的作品页（MyArtworksFragment）：
+   - 瀑布流展示用户的所有作品（角色立绘 + 标题）
+   - 点击作品跳转到作品详情页
+   - 长按作品弹出菜单（编辑、删除、分享）
+   - 下拉刷新 + 上拉加载更多
+
+2. 发现/社区页（DiscoverFragment）：
+   - 瀑布流展示所有用户公开的作品
+   - 点赞功能
+   - 点击作品跳转到作品详情页
+   - 下拉刷新 + 上拉加载更多
+
+3. 作品详情页（ArtworkDetailActivity）：
+   - 角色立绘大图
+   - 故事档案文字
+   - 作者信息
+   - 相关推荐
+   - 操作按钮：点赞、分享、举报
+
+4. 参考设计稿实现 UI</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">7</span>
+<h4>开发用户系统模块</h4>
+<div class="prompt">/plan
+
+开发用户系统模块：
+
+1. 登录页（LoginActivity）：
+   - 用户名 + 密码登录
+   - 登录成功后保存 JWT Token 到 SharedPreferences
+   - 跳转到首页
+
+2. 注册页（RegisterActivity）：
+   - 用户名 + 密码 + 确认密码注册
+   - 表单校验（用户名长度、密码强度）
+   - 注册成功后自动登录并跳转到首页
+
+3. Token 管理：
+   - 在 OkHttp 拦截器中自动添加 Authorization: Bearer {token} 请求头
+   - Token 过期时自动跳转到登录页
+   - 退出登录功能（清除 Token 并跳转到登录页）
+
+4. 个人中心页（ProfileFragment）：
+   - 用户头像和昵称
+   - 作品数量统计
+   - 设置按钮（消息通知、关于我们、退出登录）</div>
+</div>
+
+</div>
+</div>
+</section>
+
+<!-- PHASE 5 -->
+<section id="phase5" style="background:linear-gradient(180deg,#fff,var(--purple-soft))">
+<div class="wrap">
+<span class="eyebrow">Stage 05</span>
+<span class="phase-badge test">PHASE 5</span>
+<h2 class="sec-title">前后端联调与测试</h2>
+<p class="sec-desc">将后端 API 服务部署到云端运行环境，Android 客户端连接后端进行联调测试。使用 webapp-testing 技能进行 API 自动化测试。</p>
+
+<div class="steps">
+
+<div class="step-item">
+<span class="step-num">1</span>
+<h4>部署后端到云端运行环境</h4>
+<p>确保云端运行环境已正确配置（参考阶段 0 步骤 5），然后在 TRAE Work 中启动后端服务：</p>
+<div class="prompt">请确保后端服务已在云端运行环境中正确启动。
+检查 application.yml 中的数据库连接配置是否正确。
+确认所有 API 接口可以通过 http://localhost:8080/api/ 访问。</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">2</span>
+<h4>使用 webapp-testing 技能测试 API</h4>
+<p>使用 webapp-testing 技能编写自动化测试脚本，验证所有 API 接口的功能正确性：</p>
+<div class="prompt">/webapp-testing
+
+请为后端 API 编写自动化测试脚本，覆盖以下接口：
+
+1. 用户认证接口：
+   - 注册新用户 POST /api/auth/register
+   - 用户登录 POST /api/auth/login
+   - 验证返回的 JWT Token 格式
+
+2. 素材管理接口：
+   - 上传图片 POST /api/materials/upload
+   - 触发抠图 POST /api/materials/{id}/cutout
+   - 查询素材列表 GET /api/materials
+
+3. 拼贴作品接口：
+   - 保存拼贴作品 POST /api/artworks
+   - 触发 AI 生成 POST /api/artworks/{id}/generate
+   - 查询作品列表 GET /api/artworks
+   - 查询作品详情 GET /api/artworks/{id}
+
+4. 异常场景测试：
+   - 未登录访问需要认证的接口
+   - 上传超过大小限制的文件
+   - 访问不存在的资源
+
+请生成测试脚本并执行，返回测试结果报告。</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">3</span>
+<h4>配置 Android 客户端连接后端</h4>
+<p>在 Android 项目中配置后端 API 地址，确保客户端可以正确连接到云端运行环境中的后端服务：</p>
+<div class="prompt">/plan
+
+配置 Android 客户端连接后端 API 服务：
+
+1. 在 config 类中定义后端 API 基础地址（根据云端运行环境的访问地址配置）
+2. 在 Retrofit 客户端中配置 BaseUrl
+3. 添加网络超时配置（连接超时 30 秒，读取超时 60 秒，AI 生成接口单独配置更长的超时时间）
+4. 添加网络请求日志拦截器（开发阶段打印请求和响应日志）
+5. 配置 HTTPS 证书校验（如果后端使用 HTTPS）
+
+同时请检查所有 API 接口调用的代码路径：
+- 确认请求参数格式与后端接口定义一致
+- 确认响应数据解析逻辑正确
+- 确认错误处理逻辑完善（网络错误、服务器错误、业务错误）</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">4</span>
+<h4>全流程联调测试</h4>
+<p>在 Android 设备或模拟器上进行全流程联调测试，验证三步魔法闭环的完整体验：</p>
+<div class="prompt">请帮我列出全流程联调测试的测试用例清单，覆盖以下场景：
+
+1. 新用户注册 → 登录 → 进入首页
+2. 首页点击"开始创作" → 进入拍照页 → 拍照 → 确认 → 上传图片 → 触发抠图 → 查看抠图结果
+3. 抠图结果页点击"去拼贴" → 进入拼贴编辑器 → 拖拽素材到画布 → 调整位置和大小 → 保存拼贴作品
+4. 拼贴作品保存后 → 进入 AI 生成页 → 点击"开始生成" → 等待生成完成 → 查看角色立绘和故事档案
+5. 生成结果页点击"分享" → 调用系统分享面板
+6. 首页底部导航切换 → 我的作品页 → 发现页
+7. 退出登录 → 重新登录 → 验证作品数据是否正确恢复
+
+对每个测试用例，请说明：
+- 测试步骤
+- 预期结果
+- 可能出现的问题及排查方法</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">5</span>
+<h4>问题修复与性能优化</h4>
+<p>根据联调测试中发现的问题，逐一修复。常见的优化点包括：</p>
+<div class="prompt">/plan
+
+请帮我进行以下性能优化和问题修复：
+
+1. 图片加载优化：
+   - 使用 Glide 的缩略图功能加载大图
+   - 对抠图后的透明 PNG 图片进行适当的压缩
+   - 列表中的缩略图使用较低分辨率的图片
+
+2. 网络请求优化：
+   - 添加网络请求重试机制
+   - AI 生成接口使用更长的超时时间
+   - 添加请求去重机制（避免用户快速点击导致重复请求）
+
+3. 内存优化：
+   - 拼贴编辑器的画布图片使用适当的分辨率
+   - 及时回收不再使用的 Bitmap
+   - 列表使用 ViewHolder 模式减少视图创建开销
+
+4. 用户体验优化：
+   - 所有网络请求添加加载状态提示
+   - AI 生成等待过程添加有趣的动画
+   - 拍照后添加简单的图片处理（旋转校正、裁剪）</div>
+</div>
+
+</div>
+</div>
+</section>
+
+<!-- PHASE 6 -->
+<section id="phase6" style="background:linear-gradient(180deg,#fff,#fef2f2)">
+<div class="wrap">
+<span class="eyebrow">Stage 06</span>
+<span class="phase-badge deploy">PHASE 6</span>
+<h2 class="sec-title">部署上线与参赛提交</h2>
+<p class="sec-desc">将后端部署到生产环境、Android 客户端生成签名 APK、准备参赛提交材料。</p>
+
+<div class="steps">
+
+<div class="step-item">
+<span class="step-num">1</span>
+<h4>对接真实 AI 模型 API</h4>
+<p>将 Mock 模式替换为真实的 AI 模型 API 对接：</p>
+<div class="prompt">/plan
+
+请将 AI 服务对接层从 Mock 模式切换为真实 API 对接：
+
+1. 抠图服务：
+   - 对接抠图模型 API
+   - 在 application.yml 中配置 API 地址和密钥
+   - 处理 API 调用失败的重试逻辑
+
+2. 文生图服务：
+   - 对接文生图模型 API（如豆包 / Seedream）
+   - 设计 Prompt 模板：基于拼贴原型图片 + 预设的 Prompt 生成精美角色立绘
+   - Prompt 模板示例："一个由瓶盖和纽扣拼贴而成的可爱卡通角色，扁平插画风格，柔和的色彩，干净的背景，高细节"
+   - 处理图片生成 API 的异步调用模式
+
+3. 文本生成服务：
+   - 对接大语言模型 API（如豆包大模型）
+   - 设计 Prompt 模板：基于角色立绘图片描述 + 预设的 Prompt 生成幽默档案故事
+   - Prompt 模板示例："请为这个由废弃物改造而成的卡通角色写一个幽默的档案故事，包括：角色名字、种族、职业、特殊能力、口头禅、一个有趣的背景故事。字数控制在 200-300 字。"
+
+4. 在云端运行环境变量中配置 AI 模型 API 的密钥（使用敏感变量加密存储）</div>
+<div class="tip"><strong>💡 Prompt 调优：</strong>AI 生成效果很大程度取决于 Prompt 的质量。建议先用少量素材测试，根据生成效果反复调优 Prompt 模板。</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">2</span>
+<h4>部署后端到生产环境</h4>
+<p>将 Spring Boot 后端部署到生产服务器。可以选择火山引擎、阿里云等云服务商：</p>
+<div class="prompt">/plan
+
+请帮我准备后端生产环境部署方案：
+
+1. 服务器准备：
+   - 推荐：火山引擎 ECS（2核 4G 起步）
+   - 安装 JDK 17 + MySQL 8.0 + Nginx
+   - 配置防火墙规则（仅开放 80/443 端口）
+
+2. 数据库部署：
+   - 创建生产数据库 waste_alien_prod
+   - 执行数据库迁移脚本
+   - 配置数据库定期备份
+
+3. 后端服务部署：
+   - 打包 Spring Boot 应用：mvn clean package -DskipTests
+   - 使用 systemd 或 Docker 部署 JAR 包
+   - 配置 Nginx 反向代理和 HTTPS 证书
+
+4. 对象存储配置：
+   - 创建对象存储 Bucket（用于存储用户上传的图片和 AI 生成结果）
+   - 配置 CDN 加速图片访问
+
+5. 生产环境配置：
+   - SPRING_PROFILES_ACTIVE=prod
+   - 数据库连接地址和密码
+   - AI 模型 API 密钥
+   - JWT 密钥
+   - 对象存储 Access Key 和 Secret Key</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">3</span>
+<h4>生成签名 APK 并发布</h4>
+<div class="prompt">/plan
+
+请帮我准备 Android 客户端的发布版本：
+
+1. 生成签名密钥：
+   - 使用 keytool 生成 keystore 文件
+   - 妥善保管密钥文件和密码（不要提交到 Git 仓库）
+
+2. 配置 Gradle 签名：
+   - 在 build.gradle 中配置 signingConfigs
+   - 将密钥文件路径和密码放在 local.properties 中（不提交到 Git）
+
+3. 生成 Release APK：
+   - 执行 ./gradlew assembleRelease
+   - 验证 APK 可以正常安装和使用
+
+4. 发布前检查清单：
+   - 确认生产环境的 API 地址配置正确
+   - 确认所有权限申请都有合理说明
+   - 确认 App 图标和启动页设计正确
+   - 确认不同屏幕尺寸的适配效果
+   - 确认无崩溃日志和 ANR
+
+5. 应用商店发布（可选）：
+   - 准备应用描述、截图、宣传图
+   - 提交到应用宝、华为应用市场等国内应用商店</div>
+</div>
+
+<div class="step-item">
+<span class="step-num">4</span>
+<h4>准备参赛提交材料</h4>
+<p>根据 TRAE AI 创造力大赛的要求，准备完整的参赛提交材料：</p>
+<div class="prompt">/plan
+
+请帮我准备 TRAE AI 创造力大赛的参赛提交材料：
+
+1. 参赛创意文档（已有创意文档 HTML，请检查是否需要更新）：
+   - 创意介绍
+   - 产品形态
+   - 目标用户
+   - 使用场景
+   - 当前痛点
+   - 价值与意义
+
+2. 报名帖文档（已有报名帖 .doc 文件，请检查是否需要更新）
+
+3. 项目演示视频脚本：
+   - 开场：介绍创意来源和要解决的问题
+   - Demo演示：完整展示三步魔法闭环（拍照抠图 → 拼贴 → AI 生成）
+   - 结尾：展示作品集和分享功能，总结产品价值
+
+4. 项目源代码仓库：
+   - 确认 GitHub 仓库已设为公开
+   - 检查 README.md 是否包含完整的项目介绍、技术栈、安装和使用说明
+   - 确认代码提交历史清晰规范
+
+5. 参赛总结文档：
+   - 开发过程中使用了 TRAE Work 的哪些能力（Spec 工作流、Plan 工作流、技能市场、Design 模式等）
+   - TRAE Work 帮助提升了哪些开发效率
+   - 对 TRAE Work 的使用体验和建议</div>
+</div>
+
+</div>
+</div>
+</section>
+
+<!-- TIPS -->
+<section style="background:linear-gradient(180deg,#fef2f2,#fff)">
+<div class="wrap">
+<span class="eyebrow">Tips & Best Practices</span>
+<h2 class="sec-title">TRAE Work 使用技巧</h2>
+
+<div class="card">
+<h3>Spec vs Plan：什么时候用哪个？</h3>
+<table class="arch-table">
+<thead><tr><th>维度</th><th>Spec 工作流</th><th>Plan 工作流</th></tr></thead>
+<tbody>
+<tr><td>适用场景</td><td>从零搭建新系统/模块、大规模重构</td><td>中小型功能开发、模块级重构</td></tr>
+<tr><td>文档复杂度</td><td>三阶段文档组（spec.md + tasks.md + checklist.md）</td><td>单份计划文档（plan.md）</td></tr>
+<tr><td>文档存放</td><td>.trae/specs/ 目录</td><td>.trae/documents/ 目录</td></tr>
+<tr><td>本项目中推荐使用</td><td>阶段 2（系统架构规划）</td><td>阶段 3-4（各模块开发）</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="card">
+<h3>如何高效地与 AI 对话？</h3>
+<ul>
+<li><strong>提供足够的上下文：</strong>每次发起 Plan 时，附上相关的 Spec 文档、设计稿、数据库模型等上下文信息，让 AI 的规划更准确</li>
+<li><strong>明确技术约束：</strong>在指令中明确说明技术栈、代码规范、接口格式等约束条件，避免 AI 生成不符合预期的代码</li>
+<li><strong>分模块逐步开发：</strong>不要一次性让 AI 开发所有功能，而是按模块逐个发起 Plan，每个模块完成后测试再继续下一个</li>
+<li><strong>及时反馈问题：</strong>如果 AI 生成的代码有问题，直接在对话中指出具体问题和期望的修改方式，AI 会迭代修改</li>
+<li><strong>善用 /git-commit 技能：</strong>每完成一个功能模块就用 git-commit 技能提交代码，保持提交历史规范清晰</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>云端运行环境使用建议</h3>
+<ul>
+<li><strong>敏感信息用敏感变量：</strong>AI 模型 API 密钥、数据库密码等敏感信息使用"敏感变量"存储，会被 KMS 加密</li>
+<li><strong>普通配置用环境变量：</strong>DEBUG 开关、LOG_LEVEL 等普通配置使用"环境变量"存储</li>
+<li><strong>网络策略配置：</strong>如果项目只需要访问特定的依赖源，可以配置网络策略白名单，限制出站流量提升安全性</li>
+<li><strong>多服务并行启动：</strong>如果项目需要同时启动后端服务和数据库，可以在 terminals 配置中并行启动多个服务</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>Design 模式与 Code 模式的协同工作流</h3>
+<ul>
+<li><strong>先 Design 后 Code：</strong>先在 Design 模式中完成所有页面的 UI 设计，确认满意后统一导出到 Code 模式开发</li>
+<li><strong>设计稿作为上下文：</strong>在 Code 模式中开发每个页面时，附上对应的 Design 模式设计稿作为参考</li>
+<li><strong>设计迭代与代码迭代分离：</strong>UI 需要调整时回到 Design 模式修改，功能逻辑调整时在 Code 模式修改</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>使用 AGENTS.md 管理项目级规则</h3>
+<p>除了在设置中心创建全局规则外，还可以在项目根目录创建 AGENTS.md 文件，定义项目级规则：</p>
+<div class="prompt"># AGENTS.md 示例
+
+## 项目概述
+废物星人改造计划：用 AI 复活废弃物品的创意拼贴 App
+
+## 技术栈约束
+- Android 客户端：Java 原生开发，不使用 Kotlin
+- 后端 API：Spring Boot 3.x + Java 17
+- 数据库：MySQL 8.0
+- AI 模型：抠图模型 + 文生图模型 + 大语言模型
+
+## 代码规范
+- 所有代码注释使用中文
+- API 接口返回统一格式 { code, message, data }
+- 后端接口需要添加 Swagger 注解
+- Android 客户端使用 ViewBinding
+
+## 开发流程
+- 每个功能模块开发前先发起 Plan 工作流
+- 每完成一个模块使用 /git-commit 提交代码
+- 定期使用 /webapp-testing 进行接口测试</div>
+<div class="tip"><strong>💡 注意：</strong>AGENTS.md 仅在 TRAE Work 桌面版中支持。需要在 设置 → 规则 中开启"将 AGENTS.md 包含在上下文中"开关才能生效。</div>
+</div>
+
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+<div class="wrap">
+<div class="logo">♻ 废物星人改造计划</div>
+<div>TRAE AI 创造力大赛 · 生活娱乐赛道 · TRAE Work 开发指南</div>
+</div>
+</footer>
+
+</body>
+</html>

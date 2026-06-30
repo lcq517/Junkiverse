@@ -1,0 +1,43 @@
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build output
+backend/target/
+android/app/build/
+android/.gradle/
+android/local.properties
+
+# Dependencies
+backend/dependency-reduced-pom.xml
+**/node_modules/
+
+# Environment & secrets
+*.env
+*.env.local
+*.env.yml
+application-prod.yml
+application-local.yml
+
+# Logs
+*.log
+logs/
+
+# TRAE Work
+.trae/specs/
+.trae/documents/
+.trae/skills/
+
+# Temp files
+*.tmp
+*.bak
+*.cache
