@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>抠图方案选择</title>
+<style>
+  :root {
+    --bg-primary: #f5f5f7;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #e5e5e7;
+    --border: #d1d1d6;
+    --text-primary: #1d1d1f;
+    --text-secondary: #86868b;
+    --accent: #0071e3;
+    --accent-hover: #0077ed;
+    --selected-bg: #e8f4fd;
+    --selected-border: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-primary: #1d1d1f;
+      --bg-secondary: #2d2d2f;
+      --bg-tertiary: #3d3d3f;
+      --border: #424245;
+      --text-primary: #f5f5f7;
+      --text-secondary: #86868b;
+      --accent: #0a84ff;
+      --accent-hover: #409cff;
+      --selected-bg: rgba(10, 132, 255, 0.15);
+      --selected-border: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding: 2rem;
+    line-height: 1.5;
+  }
+  h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .subtitle { color: var(--text-secondary); margin-bottom: 1.5rem; max-width: 640px; }
+  .options { display: flex; flex-direction: column; gap: 0.75rem; max-width: 640px; }
+  .option {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .option:hover { border-color: var(--accent); }
+  .option.selected { background: var(--selected-bg); border-color: var(--selected-border); }
+  .option .letter {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    width: 1.75rem; height: 1.75rem;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 0.85rem; flex-shrink: 0;
+  }
+  .option.selected .letter { background: var(--accent); color: white; }
+  .option .content { flex: 1; }
+  .option .content h3 { font-size: 0.95rem; margin-bottom: 0.25rem; }
+  .option .content p { color: var(--text-secondary); font-size: 0.85rem; margin: 0; }
+  .option .content .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+    margin-right: 4px;
+  }
+  .tip {
+    margin-top: 1.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    max-width: 640px;
+  }
+  .tip strong { color: var(--text-primary); }
+</style>
+</head>
+<body>
+
+<h2>拍照抠图用什么方案？</h2>
+<p class="subtitle">核心第一步是把废品从背景中抠出来，不同方案的效果、速度和成本差别很大</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>前端 AI 模型（推荐）</h3>
+      <p>用浏览器端运行的轻量级抠图模型（如 remove.bg 的 Web 版、@imgly/background-removal），用户上传照片后本地即时抠图，无需服务器。</p>
+      <span class="tag">纯前端</span><span class="tag">即时出图</span><span class="tag">免费方案</span>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>后端 AI 抠图 API</h3>
+      <p>上传图片到后端，调用第三方 API（如 remove.bg、阿里云抠图）或自部署模型处理，效果更好但有成本和延迟。</p>
+      <span class="tag">效果最好</span><span class="tag">有成本</span><span class="tag">需后端</span>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>简单手动抠图</h3>
+      <p>用户手动框选或用魔棒工具抠图，技术最简单但体验差，不符合"零门槛"定位。</p>
+      <span class="tag">开发快</span><span class="tag">体验差</span>
+    </div>
+  </div>
+</div>
+
+<div class="tip">
+  <strong>💡 建议：</strong>MVP 先用前端 AI 模型，效果够用且零成本，用户体验流畅。如果后续效果不够好，再叠加后端 API 做增强。
+</div>
+
+<script>
+function toggleSelect(el) {
+  document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+</script>
+
+</body>
+</html>
