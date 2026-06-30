@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>整体架构方案</title>
+<style>
+  :root {
+    --bg-primary: #f5f5f7;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #e5e5e7;
+    --border: #d1d1d6;
+    --text-primary: #1d1d1f;
+    --text-secondary: #86868b;
+    --text-tertiary: #aeaeb2;
+    --accent: #0071e3;
+    --accent-hover: #0077ed;
+    --success: #34c759;
+    --warning: #ff9f0a;
+    --error: #ff3b30;
+    --selected-bg: #e8f4fd;
+    --selected-border: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-primary: #1d1d1f;
+      --bg-secondary: #2d2d2f;
+      --bg-tertiary: #3d3d3f;
+      --border: #424245;
+      --text-primary: #f5f5f7;
+      --text-secondary: #86868b;
+      --text-tertiary: #636366;
+      --accent: #0a84ff;
+      --accent-hover: #409cff;
+      --success: #30d158;
+      --warning: #ff9f0a;
+      --error: #ff453a;
+      --selected-bg: rgba(10, 132, 255, 0.15);
+      --selected-border: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding: 2rem;
+    line-height: 1.5;
+  }
+  h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .subtitle { color: var(--text-secondary); margin-bottom: 1.5rem; max-width: 720px; }
+  .options { display: flex; flex-direction: column; gap: 1rem; max-width: 720px; }
+  .option {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .option:hover { border-color: var(--accent); }
+  .option.selected { background: var(--selected-bg); border-color: var(--selected-border); }
+  .option-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+  .option .letter {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    width: 1.75rem; height: 1.75rem;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 0.85rem; flex-shrink: 0;
+  }
+  .option.selected .letter { background: var(--accent); color: white; }
+  .option h3 { font-size: 1rem; margin-bottom: 0.1rem; }
+  .option .desc { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.75rem; }
+  .arch-diagram {
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .arch-box {
+    background: var(--bg-secondary);
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    font-size: 0.75rem;
+    text-align: center;
+  }
+  .arch-box.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .arch-arrow { color: var(--text-tertiary); font-size: 1rem; }
+  .pros-cons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+  .pros, .cons {
+    font-size: 0.8rem;
+  }
+  .pros h4 { color: var(--success); margin-bottom: 0.35rem; font-size: 0.75rem; }
+  .cons h4 { color: var(--error); margin-bottom: 0.35rem; font-size: 0.75rem; }
+  .pros ul, .cons ul { margin-left: 1rem; color: var(--text-secondary); }
+  .pros li, .cons li { margin-bottom: 0.15rem; }
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 0.5rem;
+    background: var(--success);
+    color: white;
+    font-weight: 500;
+  }
+  .tip {
+    margin-top: 1.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    max-width: 720px;
+  }
+  .tip strong { color: var(--text-primary); }
+</style>
+</head>
+<body>
+
+<h2>整体架构选哪个？</h2>
+<p class="subtitle">三种方案各有侧重，核心权衡是"开发速度 vs 扩展性 vs 安全性"</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="option-header">
+      <div class="letter">A</div>
+      <div>
+        <h3>纯前端 + Serverless<span class="badge">推荐</span></h3>
+        <div class="desc">前端单页应用 + 云函数调用 AI API，零服务器维护</div>
+      </div>
+    </div>
+    <div class="arch-diagram">
+      <div class="arch-box primary">浏览器</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box">前端抠图模型</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box">Canvas 拼贴</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box primary">云函数</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box">AI API</div>
+    </div>
+    <div class="pros-cons">
+      <div class="pros">
+        <h4>✅ 优点</h4>
+        <ul>
+          <li>部署简单，成本最低</li>
+          <li>AI 密钥安全（不暴露前端）</li>
+          <li>扩展性好，后续加功能方便</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>❌ 缺点</h4>
+        <ul>
+          <li>云函数有冷启动延迟</li>
+          <li>需要选 serverless 平台</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="option-header">
+      <div class="letter">B</div>
+      <div>
+        <h3>前端 + 轻量 Node 后端</h3>
+        <div class="desc">Node.js 后端代理 AI 调用 + 简单数据存储</div>
+      </div>
+    </div>
+    <div class="arch-diagram">
+      <div class="arch-box primary">浏览器</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box">前端抠图</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box">Canvas 拼贴</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box primary">Node 后端</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box">AI API + 存储</div>
+    </div>
+    <div class="pros-cons">
+      <div class="pros">
+        <h4>✅ 优点</h4>
+        <ul>
+          <li>功能灵活，什么都能做</li>
+          <li>后续加用户系统方便</li>
+          <li>本地开发调试方便</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>❌ 缺点</h4>
+        <ul>
+          <li>MVP 阶段有点重</li>
+          <li>需要部署维护后端</li>
+          <li>开发周期更长</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="option-header">
+      <div class="letter">C</div>
+      <div>
+        <h3>纯前端静态页（最简）</h3>
+        <div class="desc">纯 HTML/JS 静态页，什么都在浏览器里搞定</div>
+      </div>
+    </div>
+    <div class="arch-diagram">
+      <div class="arch-box primary" style="width: 100%;">浏览器内完成全部：抠图 → 拼贴 → AI 生成 → 本地存储</div>
+    </div>
+    <div class="pros-cons">
+      <div class="pros">
+        <h4>✅ 优点</h4>
+        <ul>
+          <li>开发最快，一周就能出 MVP</li>
+          <li>部署最简单，放静态托管就行</li>
+          <li>零后端成本</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>❌ 缺点</h4>
+        <ul>
+          <li>AI 密钥暴露在前端（不安全）</li>
+          <li>数据只能存本地，换设备就没了</li>
+          <li>后续扩展要重构</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tip">
+  <strong>💡 建议：</strong>选 A 方案——纯前端 + Serverless。既有后端能力保护 AI 密钥，又不用维护服务器，MVP 阶段成本最低，而且后续要加用户系统、作品存储都很方便。
+</div>
+
+<script>
+function toggleSelect(el) {
+  document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+</script>
+
+</body>
+</html>
