@@ -1,0 +1,32 @@
+<h2>MVP 用什么平台？</h2>
+<p class="subtitle">核心闭环是拍照抠图 → 拼贴 → AI生成，不同平台的开发成本和验证速度差异很大</p>
+
+<div class="options">
+  <div class="option" data-choice="web" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>网页版（推荐）</h3>
+      <p>H5 单页应用，手机浏览器直接用，不用下载。开发快，验证成本最低，分享链接即可传播。</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="wechat" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>微信小程序</h3>
+      <p>在微信生态内传播力强，拍照/分享都很方便，但需要审核，且 AI 能力调用有限制。</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="android" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Android App</h3>
+      <p>原生体验最好，拍照和图像处理能力最强，但开发周期长，用户获取成本高，不适合 MVP。</p>
+    </div>
+  </div>
+</div>
+
+<div class="tip" style="margin-top: 24px;">
+  <strong>💡 建议：</strong>MVP 先用网页版快速验证核心玩法是否有趣，用户喜欢之后再考虑做小程序或 App。
+</div>
